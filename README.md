@@ -1,5 +1,8 @@
 # po-bundle
 
+[![crates.io](https://img.shields.io/crates/v/po-bundle.svg)](https://crates.io/crates/po-bundle)
+[![docs.rs](https://img.shields.io/docsrs/po-bundle)](https://docs.rs/po-bundle)
+
 **Gettext `.po` translations baked into your binary — for Rust code and Slint UIs alike.**
 
 Slint can already translate the strings in `.slint` files (`@tr`) from bundled
@@ -54,10 +57,10 @@ everything follows at once.*
 
 ```toml
 [dependencies]
-po-bundle = { git = "https://github.com/baslentfert/po-bundle", features = ["slint"] } # "slint" only for Slint apps
+po-bundle = { version = "0.1", features = ["slint"] } # "slint" only for Slint apps
 
 [build-dependencies]
-po-bundle = { git = "https://github.com/baslentfert/po-bundle" }
+po-bundle = "0.1"
 ```
 
 `build.rs`:
@@ -88,7 +91,7 @@ fn main() {
 Then collect the strings and start a language:
 
 ```sh
-cargo install --git https://github.com/baslentfert/po-bundle po-bundle
+cargo install po-bundle
 po-bundle update --slint ui --add nl --add de
 # translate translations/nl/LC_MESSAGES/<crate>.po, then build
 ```
