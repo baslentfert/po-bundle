@@ -1,0 +1,25 @@
+[package]
+name = "po-bundle"
+version = "0.1.0"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+description = "Gettext .po translations baked into your binary, for Rust code and Slint UIs alike: a tr! macro, OS-language detection, and a tool that keeps the .po files up to date."
+keywords = ["i18n", "gettext", "translation", "slint", "localization"]
+categories = ["internationalization", "localization", "gui"]
+readme = "README.md"
+repository = "https://github.com/baslentfert/po-bundle"
+exclude = ["docs/", "examples/*/target"]
+
+[features]
+default = []
+# Also switch Slint's bundled translations (@tr in .slint files) when the
+# language changes.
+slint = ["dep:slint"]
+
+[dependencies]
+sys-locale = "0.3"
+slint = { version = "1", optional = true }
+
+[[bin]]
+name = "po-bundle"
+path = "src/bin/po-bundle.rs"

@@ -1,0 +1,159 @@
+// Every kind of Slint element with a translated text, to show that @tr
+// follows a language switch everywhere: menus, tabs, buttons, inputs,
+// placeholders, lists, table headers, popups, accessibility labels and
+// plural forms. Texts that come from Rust (tr!) are set as properties.
+
+import {
+    Button, CheckBox, ComboBox, DatePickerPopup, GroupBox, LineEdit, ProgressIndicator,
+    RadioGroup, Slider, SpinBox, Spinner, StandardButton, StandardListView, StandardTableView,
+    Switch, TabWidget, TextEdit, VerticalBox, HorizontalBox
+} from "std-widgets.slint";
+
+export component AppWindow inherits Window {
+    title: @tr("po-bundle example");
+    preferred-width: 560px;
+    preferred-height: 460px;
+
+    // From Rust (see main.rs).
+    in property <[string]> languages;
+    in-out property <int> language;
+    in property <string> greeting;
+    in property <[[StandardListViewItem]]> table-rows;
+    callback language-chosen(int);
+    callback quit();
+
+    in-out property <int> files: 3;
+    in-out property <int> tab;
+    in-out property <string> status;
+
+    MenuBar {
+        Menu {
+            title: @tr("File");
+            MenuItem { title: @tr("New"); activated => { root.status = @tr("New file"); } }
+            MenuItem { title: @tr("Open…"); activated => { root.status = @tr("Open a file"); } }
+            MenuSeparator { }
+            MenuItem { title: @tr("Quit"); activated => { root.quit(); } }
+        }
+        Menu {
+            title: @tr("Help");
+            MenuItem { title: @tr("About"); activated => { about.show(); } }
+        }
+    }
+
+    about := PopupWindow {
+        x: 120px; y: 80px; width: 320px;
+        Rectangle {
+            background: #ffffff; border-radius: 8px; border-width: 1px; border-color: #c0c0c0;
+            VerticalBox {
+                Text { text: @tr("About this example"); font-weight: 700; }
+                Text { text: @tr("Every text here comes from a .po file."); wrap: word-wrap; }
+                StandardButton { kind: close; clicked => { about.close(); } }
+            }
+        }
+    }
+
+    VerticalBox {
+        HorizontalBox {
+            padding: 0;
+            Text { text: root.greeting; vertical-alignment: center; horizontal-stretch: 1; }
+            Text { text: @tr("Language:"); vertical-alignment: center; }
+            ComboBox {
+                model: root.languages;
+                current-index <=> root.language;
+                accessible-label: @tr("Language");
+                selected => { root.language-chosen(self.current-index); }
+            }
+        }
+
+        TabWidget {
+            current-index <=> root.tab;
+            Tab {
+                title: @tr("Buttons");
+                VerticalBox {
+                    alignment: start;
+                    HorizontalBox {
+                        padding: 0;
+                        Button { text: @tr("Save"); primary: true; clicked => { root.status = @tr("Saved"); } }
+                        Button { text: @tr("Don't save"); clicked => { root.status = @tr("Not saved"); } }
+                        StandardButton { kind: cancel; }
+                    }
+                    CheckBox { text: @tr("Remember my choice"); }
+                    Switch { text: @tr("Send this computer's sound"); checked: true; }
+                    GroupBox {
+                        title: @tr("Quality");
+                        RadioGroup {
+                            RadioButton { text: @tr("Fast"); }
+                            RadioButton { text: @tr("Balanced"); }
+                            RadioButton { text: @tr("Sharp"); }
+                        }
+                    }
+                }
+            }
+            Tab {
+                title: @tr("Input");
+                VerticalBox {
+                    alignment: start;
+                    LineEdit { placeholder-text: @tr("Type a name…"); accessible-label: @tr("Name"); }
+                    TextEdit { placeholder-text: @tr("A longer note…"); height: 70px; }
+                    HorizontalBox {
+                        padding: 0;
+                        Text { text: @tr("Copies:"); vertical-alignment: center; }
+                        SpinBox { minimum: 0; maximum: 99; value <=> root.files; }
+                        Slider { minimum: 0; maximum: 99; value: root.files; changed(v) => { root.files = v; } }
+                    }
+                    // A plural form: "1 file copied", "3 files copied".
+                    Text { text: @tr("{n} file copied" | "{n} files copied" % root.files); }
+                    HorizontalBox {
+                        padding: 0;
+                        ComboBox { model: [@tr("Small"), @tr("Medium"), @tr("Large")]; }
+                        Button { text: @tr("Pick a date…"); clicked => { date.show(); } }
+                    }
+                }
+            }
+            Tab {
+                title: @tr("Lists");
+                HorizontalBox {
+                    StandardListView {
+                        width: 160px;
+                        model: [{ text: @tr("Inbox") }, { text: @tr("Sent") }, { text: @tr("Archive") }];
+                    }
+                    StandardTableView {
+                        columns: [{ title: @tr("Name") }, { title: @tr("Status") }];
+                        rows: root.table-rows;
+                    }
+                }
+            }
+            Tab {
+                title: @tr("Progress");
+                VerticalBox {
+                    alignment: start;
+                    Text { text: @tr("Copying files…"); }
+                    ProgressIndicator { progress: root.files / 99; }
+                    HorizontalBox {
+                        padding: 0;
+                        Spinner { indeterminate: true; width: 32px; height: 32px; }
+                        Text { text: @tr("Waiting for the other computer"); vertical-alignment: center; }
+                    }
+                }
+            }
+        }
+
+        // Right-click anywhere here for a context menu.
+        ContextMenuArea {
+            Menu {
+                MenuItem { title: @tr("Copy"); activated => { root.status = @tr("Copied"); } }
+                MenuItem { title: @tr("Paste"); activated => { root.status = @tr("Pasted"); } }
+            }
+            Text {
+                text: root.status == "" ? @tr("Right-click here for a menu.") : root.status;
+                color: #606060;
+            }
+        }
+    }
+
+    date := DatePickerPopup {
+        title: @tr("Pick a date");
+        accepted => { date.close(); }
+        canceled => { date.close(); }
+    }
+}

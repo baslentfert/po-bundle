@@ -1,0 +1,12 @@
+name: CI
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo test
+      - run: cargo clippy --all-targets -- -D warnings
+      - name: example translations are complete
+        run: cargo run --bin po-bundle -- check --crate examples/hello-slint --slint ui

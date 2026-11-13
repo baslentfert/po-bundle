@@ -1,0 +1,16 @@
+[package]
+name = "hello-slint"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+# A small example on its own, outside any surrounding workspace.
+[workspace]
+
+[dependencies]
+slint = "1.18"
+po-bundle = { path = "../..", features = ["slint"] }
+
+[build-dependencies]
+slint-build = "1.18"
+po-bundle = { path = "../.." }

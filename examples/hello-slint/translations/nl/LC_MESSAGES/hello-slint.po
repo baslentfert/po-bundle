@@ -1,0 +1,492 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: nl\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: po-bundle\n"
+
+#: src/main.rs:18
+msgid "Hello, {name}!"
+msgstr "Hallo, {name}!"
+
+#: src/main.rs:22
+msgid "Automatic"
+msgstr "Automatisch"
+
+#: src/main.rs:31
+msgid "Connected"
+msgstr "Verbonden"
+
+#: src/main.rs:32
+msgid "Not found"
+msgstr "Niet gevonden"
+
+#: src/main.rs:33
+msgid "Last seen {days} days ago"
+msgstr "{days} dagen geleden gezien"
+
+#: ui/app.slint:13
+msgctxt "AppWindow"
+msgid "po-bundle example"
+msgstr "po-bundle-voorbeeld"
+
+#: ui/app.slint:31
+msgctxt "AppWindow"
+msgid "File"
+msgstr "Bestand"
+
+#: ui/app.slint:32
+msgctxt "AppWindow"
+msgid "New"
+msgstr "Nieuw"
+
+#: ui/app.slint:32
+msgctxt "AppWindow"
+msgid "New file"
+msgstr "Nieuw bestand"
+
+#: ui/app.slint:33
+msgctxt "AppWindow"
+msgid "Open…"
+msgstr "Openen…"
+
+#: ui/app.slint:33
+msgctxt "AppWindow"
+msgid "Open a file"
+msgstr "Een bestand openen"
+
+#: ui/app.slint:35
+msgctxt "AppWindow"
+msgid "Quit"
+msgstr "Afsluiten"
+
+#: ui/app.slint:38
+msgctxt "AppWindow"
+msgid "Help"
+msgstr "Help"
+
+#: ui/app.slint:39
+msgctxt "AppWindow"
+msgid "About"
+msgstr "Over"
+
+#: ui/app.slint:48
+msgctxt "AppWindow"
+msgid "About this example"
+msgstr "Over dit voorbeeld"
+
+#: ui/app.slint:49
+msgctxt "AppWindow"
+msgid "Every text here comes from a .po file."
+msgstr "Elke tekst hier komt uit een .po-bestand."
+
+#: ui/app.slint:59
+msgctxt "AppWindow"
+msgid "Language:"
+msgstr "Taal:"
+
+#: ui/app.slint:63
+msgctxt "AppWindow"
+msgid "Language"
+msgstr "Taal"
+
+#: ui/app.slint:71
+msgctxt "AppWindow"
+msgid "Buttons"
+msgstr "Knoppen"
+
+#: ui/app.slint:76
+msgctxt "AppWindow"
+msgid "Save"
+msgstr "Opslaan"
+
+#: ui/app.slint:76
+msgctxt "AppWindow"
+msgid "Saved"
+msgstr "Opgeslagen"
+
+#: ui/app.slint:77
+msgctxt "AppWindow"
+msgid "Don't save"
+msgstr "Niet opslaan"
+
+#: ui/app.slint:77
+msgctxt "AppWindow"
+msgid "Not saved"
+msgstr "Niet opgeslagen"
+
+#: ui/app.slint:80
+msgctxt "AppWindow"
+msgid "Remember my choice"
+msgstr "Mijn keuze onthouden"
+
+#: ui/app.slint:81
+msgctxt "AppWindow"
+msgid "Send this computer's sound"
+msgstr "Geluid van deze computer meesturen"
+
+#: ui/app.slint:83
+msgctxt "AppWindow"
+msgid "Quality"
+msgstr "Kwaliteit"
+
+#: ui/app.slint:85
+msgctxt "AppWindow"
+msgid "Fast"
+msgstr "Snel"
+
+#: ui/app.slint:86
+msgctxt "AppWindow"
+msgid "Balanced"
+msgstr "Gebalanceerd"
+
+#: ui/app.slint:87
+msgctxt "AppWindow"
+msgid "Sharp"
+msgstr "Scherp"
+
+#: ui/app.slint:93
+msgctxt "AppWindow"
+msgid "Input"
+msgstr "Invoer"
+
+#: ui/app.slint:96
+msgctxt "AppWindow"
+msgid "Type a name…"
+msgstr "Typ een naam…"
+
+#: ui/app.slint:96 ui/app.slint:121
+msgctxt "AppWindow"
+msgid "Name"
+msgstr "Naam"
+
+#: ui/app.slint:97
+msgctxt "AppWindow"
+msgid "A longer note…"
+msgstr "Een langere notitie…"
+
+#: ui/app.slint:100
+msgctxt "AppWindow"
+msgid "Copies:"
+msgstr "Aantal:"
+
+#: ui/app.slint:105
+msgctxt "AppWindow"
+msgid "{n} file copied"
+msgid_plural "{n} files copied"
+msgstr[0] "{n} bestand gekopieerd"
+msgstr[1] "{n} bestanden gekopieerd"
+
+#: ui/app.slint:108
+msgctxt "AppWindow"
+msgid "Small"
+msgstr "Klein"
+
+#: ui/app.slint:108
+msgctxt "AppWindow"
+msgid "Medium"
+msgstr "Middel"
+
+#: ui/app.slint:108
+msgctxt "AppWindow"
+msgid "Large"
+msgstr "Groot"
+
+#: ui/app.slint:109
+msgctxt "AppWindow"
+msgid "Pick a date…"
+msgstr "Kies een datum…"
+
+#: ui/app.slint:114
+msgctxt "AppWindow"
+msgid "Lists"
+msgstr "Lijsten"
+
+#: ui/app.slint:118
+msgctxt "AppWindow"
+msgid "Inbox"
+msgstr "Postvak IN"
+
+#: ui/app.slint:118
+msgctxt "AppWindow"
+msgid "Sent"
+msgstr "Verzonden"
+
+#: ui/app.slint:118
+msgctxt "AppWindow"
+msgid "Archive"
+msgstr "Archief"
+
+#: ui/app.slint:121
+msgctxt "AppWindow"
+msgid "Status"
+msgstr "Status"
+
+#: ui/app.slint:127
+msgctxt "AppWindow"
+msgid "Progress"
+msgstr "Voortgang"
+
+#: ui/app.slint:130
+msgctxt "AppWindow"
+msgid "Copying files…"
+msgstr "Bestanden kopiëren…"
+
+#: ui/app.slint:135
+msgctxt "AppWindow"
+msgid "Waiting for the other computer"
+msgstr "Wachten op de andere computer"
+
+#: ui/app.slint:144
+msgctxt "AppWindow"
+msgid "Copy"
+msgstr "Kopiëren"
+
+#: ui/app.slint:144
+msgctxt "AppWindow"
+msgid "Copied"
+msgstr "Gekopieerd"
+
+#: ui/app.slint:145
+msgctxt "AppWindow"
+msgid "Paste"
+msgstr "Plakken"
+
+#: ui/app.slint:145
+msgctxt "AppWindow"
+msgid "Pasted"
+msgstr "Geplakt"
+
+#: ui/app.slint:148
+msgctxt "AppWindow"
+msgid "Right-click here for a menu."
+msgstr "Klik hier met rechts voor een menu."
+
+#: ui/app.slint:155
+msgctxt "AppWindow"
+msgid "Pick a date"
+msgstr "Kies een datum"
+
+#. A text in Slint's own widgets
+#: slint:std-widgets
+msgctxt "StandardButton"
+msgid "OK"
+msgstr "OK"
+
+#. A text in Slint's own widgets
+#: slint:std-widgets
+msgctxt "StandardButton"
+msgid "Cancel"
+msgstr "Annuleren"
+
+#. A text in Slint's own widgets
+#: slint:std-widgets
+msgctxt "StandardButton"
+msgid "Apply"
+msgstr "Toepassen"
+
+#. A text in Slint's own widgets
+#: slint:std-widgets
+msgctxt "StandardButton"
+msgid "Close"
+msgstr "Sluiten"
+
+#. A text in Slint's own widgets
+#: slint:std-widgets
+msgctxt "StandardButton"
+msgid "Reset"
+msgstr "Herstellen"
+
+#. A text in Slint's own widgets
+#: slint:std-widgets
+msgctxt "StandardButton"
+msgid "Help"
+msgstr "Help"
+
+#. A text in Slint's own widgets
+#: slint:std-widgets
+msgctxt "StandardButton"
+msgid "Yes"
+msgstr "Ja"
+
+#. A text in Slint's own widgets
+#: slint:std-widgets
+msgctxt "StandardButton"
+msgid "No"
+msgstr "Nee"
+
+#. A text in Slint's own widgets
+#: slint:std-widgets
+msgctxt "StandardButton"
+msgid "Abort"
+msgstr "Afbreken"
+
+#. A text in Slint's own widgets
+#: slint:std-widgets
+msgctxt "StandardButton"
+msgid "Retry"
+msgstr "Opnieuw"
+
+#. A text in Slint's own widgets
+#: slint:std-widgets
+msgctxt "StandardButton"
+msgid "Ignore"
+msgstr "Negeren"
+
+#. A text in Slint's own widgets
+#: slint:std-widgets
+msgctxt "LineEditBase"
+msgid "Undo"
+msgstr "Ongedaan maken"
+
+#. A text in Slint's own widgets
+#: slint:std-widgets
+msgctxt "LineEditBase"
+msgid "Redo"
+msgstr "Opnieuw uitvoeren"
+
+#. A text in Slint's own widgets
+#: slint:std-widgets
+msgctxt "LineEditBase"
+msgid "Cut"
+msgstr "Knippen"
+
+#. A text in Slint's own widgets
+#: slint:std-widgets
+msgctxt "LineEditBase"
+msgid "Copy"
+msgstr "Kopiëren"
+
+#. A text in Slint's own widgets
+#: slint:std-widgets
+msgctxt "LineEditBase"
+msgid "Paste"
+msgstr "Plakken"
+
+#. A text in Slint's own widgets
+#: slint:std-widgets
+msgctxt "LineEditBase"
+msgid "Select All"
+msgstr "Alles selecteren"
+
+#. A text in Slint's own widgets
+#: slint:std-widgets
+msgctxt "TextEditBase"
+msgid "Cut"
+msgstr "Knippen"
+
+#. A text in Slint's own widgets
+#: slint:std-widgets
+msgctxt "TextEditBase"
+msgid "Copy"
+msgstr "Kopiëren"
+
+#. A text in Slint's own widgets
+#: slint:std-widgets
+msgctxt "TextEditBase"
+msgid "Paste"
+msgstr "Plakken"
+
+#. A text in Slint's own widgets
+#: slint:std-widgets
+msgctxt "TextEditBase"
+msgid "Select All"
+msgstr "Alles selecteren"
+
+#. A text in Slint's own widgets
+#: slint:std-widgets
+msgctxt "DatePickerBase"
+msgid "Enter date"
+msgstr "Datum invoeren"
+
+#. A text in Slint's own widgets
+#: slint:std-widgets
+msgctxt "DatePickerBase"
+msgid "Toggle selection mode"
+msgstr "Andere manier van kiezen"
+
+#. A text in Slint's own widgets
+#: slint:std-widgets
+msgctxt "DatePickerBase"
+msgid "Previous month"
+msgstr "Vorige maand"
+
+#. A text in Slint's own widgets
+#: slint:std-widgets
+msgctxt "DatePickerBase"
+msgid "Next month"
+msgstr "Volgende maand"
+
+#. A text in Slint's own widgets
+#: slint:std-widgets
+msgctxt "One-letter abbrev for Sunday"
+msgid "S"
+msgstr "Z"
+
+#. A text in Slint's own widgets
+#: slint:std-widgets
+msgctxt "One-letter abbrev for Monday"
+msgid "M"
+msgstr "M"
+
+#. A text in Slint's own widgets
+#: slint:std-widgets
+msgctxt "One-letter abbrev for Tuesday"
+msgid "T"
+msgstr "D"
+
+#. A text in Slint's own widgets
+#: slint:std-widgets
+msgctxt "One-letter abbrev for Wednesday"
+msgid "W"
+msgstr "W"
+
+#. A text in Slint's own widgets
+#: slint:std-widgets
+msgctxt "One-letter abbrev for Thursday"
+msgid "T"
+msgstr "D"
+
+#. A text in Slint's own widgets
+#: slint:std-widgets
+msgctxt "One-letter abbrev for Friday"
+msgid "F"
+msgstr "V"
+
+#. A text in Slint's own widgets
+#: slint:std-widgets
+msgctxt "One-letter abbrev for Saturday"
+msgid "S"
+msgstr "Z"
+
+#. A text in Slint's own widgets
+#: slint:std-widgets
+msgctxt "TimePickerBase"
+msgid "hour"
+msgstr "uur"
+
+#. A text in Slint's own widgets
+#: slint:std-widgets
+msgctxt "TimePickerBase"
+msgid "minute"
+msgstr "minuut"
+
+#. A text in Slint's own widgets
+#: slint:std-widgets
+msgctxt "PeriodSelector"
+msgid "AM or PM"
+msgstr "AM of PM"
+
+#. A text in Slint's own widgets
+#: slint:std-widgets
+msgctxt "Clock"
+msgid "{} Hours or minutes of {}"
+msgstr "{} uren of minuten van {}"
+
+#~ msgid "And hello from Rust, {name}!"
+#~ msgstr "En hallo vanuit Rust, {name}!"
+
+#~ msgctxt "AppWindow"
+#~ msgid "Hello from Slint!"
+#~ msgstr "Hallo vanuit Slint!"
