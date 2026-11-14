@@ -128,6 +128,24 @@ are read and written, and Slint's `@tr("{n} file" | "{n} files" % count)`
 uses them. `po-bundle update --add <lang>` writes the right `Plural-Forms`
 header for common languages. `tr!` in Rust has no plural form yet.
 
+## Libraries with their own texts
+
+A crate with `.slint` files (a widget library, say) can ship its own
+translations. It says where they are in its `Cargo.toml`:
+
+```toml
+[package.metadata.po-bundle]
+slint = "ui"                   # its .slint files with @tr(…)
+translations = "translations"  # <lang>/LC_MESSAGES/*.po
+```
+
+`po-bundle update` in your app finds such dependencies (with
+`cargo metadata`), adds their `@tr` texts to your `.po` files and fills in
+the translations they ship. You only translate what is still missing, and
+`po-bundle check` treats them like your own texts. `--no-deps` turns this
+off. po-bundle needs to know nothing about the library, and the library
+needs no dependency on po-bundle.
+
 ## Other GUI libraries
 
 `tr!` just returns a string, so it works with any Rust UI: egui, iced,
@@ -138,7 +156,7 @@ Slint's language) is the extra for Slint.
 ## Commands
 
 ```
-po-bundle update [--crate DIR] [--dir translations] [--src src] [--slint ui] [--add LANG] [--domain NAME] [--no-slint-widgets]
+po-bundle update [--crate DIR] [--dir translations] [--src src] [--slint ui] [--add LANG] [--domain NAME] [--no-slint-widgets] [--no-deps]
 po-bundle check  [same options]
 ```
 

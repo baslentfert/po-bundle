@@ -22,11 +22,22 @@ OPTIONS (paths relative to the crate):
                        the texts of Slint's own widgets (OK, Cancel, Copy, …),
                        with Dutch and German already translated
     --no-slint-widgets leave Slint's own widget texts out
+    --no-deps          don't look at dependencies (see below)
     --add LANG         start a new language, e.g. --add fr (repeatable)
     --domain NAME      gettext domain (default: the package name in Cargo.toml)
 
 Layout: <dir>/<lang>/LC_MESSAGES/<domain>.po, as Slint's bundled
 translations expect, plus <dir>/<domain>.pot.
+
+DEPENDENCIES: a crate with .slint files (a widget library, say) can ship
+its own translations and say where they are in its Cargo.toml:
+
+    [package.metadata.po-bundle]
+    slint = \"ui\"
+    translations = \"translations\"
+
+Its @tr(…) texts then come into your .po files too, already translated
+where it has a translation (found with `cargo metadata`).
 ";
 
 struct Options {
@@ -37,6 +48,7 @@ struct Options {
     add: Vec<String>,
     domain: Option<String>,
     slint_widgets: bool,
+    deps: bool,
 }
 
 fn main() -> ExitCode {
@@ -45,7 +57,7 @@ fn main() -> ExitCode {
         eprint!("{HELP}");
         return ExitCode::FAILURE;
     };
-    let mut o = Options { krat: ".".into(), dir: "translations".into(), src: Vec::new(), slint: Vec::new(), add: Vec::new(), domain: None, slint_widgets: true };
+    let mut o = Options { krat: ".".into(), dir: "translations".into(), src: Vec::new(), slint: Vec::new(), add: Vec::new(), domain: None, slint_widgets: true, deps: true };
     while let Some(a) = args.next() {
         let mut value = || args.next().ok_or(format!("{a} needs a value"));
         let r: Result<(), String> = (|| {
@@ -57,6 +69,7 @@ fn main() -> ExitCode {
                 "--add" => o.add.push(value()?),
                 "--domain" => o.domain = Some(value()?),
                 "--no-slint-widgets" => o.slint_widgets = false,
+                "--no-deps" => o.deps = false,
                 "-h" | "--help" => {
                     print!("{HELP}");
                     std::process::exit(0);
@@ -112,7 +125,7 @@ fn domain(o: &Options) -> Result<String, String> {
 }
 
 /// All strings to translate, in order of appearance.
-fn collect(o: &Options) -> Result<Vec<Entry>, String> {
+fn collect(o: &Options, deps: &[Dep]) -> Result<Vec<Entry>, String> {
     let mut found: BTreeMap<(String, String), Entry> = BTreeMap::new();
     let mut order: Vec<(String, String)> = Vec::new();
     let mut add = |context: String, id: String, plural: String, reference: String, notes: Vec<String>| {
@@ -154,6 +167,18 @@ fn collect(o: &Options) -> Result<Vec<Entry>, String> {
             let rel = f.strip_prefix(&o.krat).unwrap_or(&f).display().to_string();
             for (context, id, plural, line) in scan_slint(&text) {
                 add(context, id, plural, format!("{rel}:{line}"), Vec::new());
+            }
+        }
+    }
+    for dep in deps {
+        let mut files = Vec::new();
+        walk(&dep.slint, "slint", &mut files);
+        files.sort();
+        for f in files {
+            let text = std::fs::read_to_string(&f).map_err(|e| format!("{}: {e}", f.display()))?;
+            let rel = f.strip_prefix(&dep.root).unwrap_or(&f).display().to_string();
+            for (context, id, plural, line) in scan_slint(&text) {
+                add(context, id, plural, format!("{}:{rel}:{line}", dep.name), vec![format!("From the crate {}", dep.name)]);
             }
         }
     }
@@ -339,7 +364,7 @@ fn header(lang: Option<&str>) -> String {
 
 /// Merges the found strings into an existing `.po` file. Returns (added,
 /// made obsolete, untranslated).
-fn merge(lang: &str, old: &File, found: &[Entry]) -> (File, usize, usize, usize) {
+fn merge(lang: &str, old: &File, found: &[Entry], shipped: &[File]) -> (File, usize, usize, usize) {
     let mut out = File { header: old.header.clone(), entries: Vec::new() };
     let (mut added, mut untranslated) = (0, 0);
     for f in found {
@@ -358,6 +383,13 @@ fn merge(lang: &str, old: &File, found: &[Entry]) -> (File, usize, usize, usize)
             && let Some(t) = po_bundle::slint_widgets::translation(lang, &e.context, &e.id)
         {
             e.text = t.to_string();
+        }
+        // A dependency ships a translation.
+        if e.text.is_empty()
+            && let Some(t) = shipped.iter().flat_map(|f| &f.entries).find(|t| t.key() == e.key() && !t.text.is_empty() && !t.fuzzy)
+        {
+            e.text = t.text.clone();
+            e.plural_texts = t.plural_texts.clone();
         }
         if e.text.is_empty() || e.fuzzy {
             untranslated += 1;
@@ -388,7 +420,8 @@ fn merge(lang: &str, old: &File, found: &[Entry]) -> (File, usize, usize, usize)
 fn update(o: &Options) -> Result<bool, String> {
     let domain = domain(o)?;
     let dir = o.krat.join(&o.dir);
-    let found = collect(o)?;
+    let deps = find_deps(o);
+    let found = collect(o, &deps)?;
     std::fs::create_dir_all(&dir).map_err(|e| format!("{}: {e}", dir.display()))?;
     let pot = File { header: header(None), entries: found.clone() };
     let pot_path = dir.join(format!("{domain}.pot"));
@@ -404,7 +437,8 @@ fn update(o: &Options) -> Result<bool, String> {
     for (lang, path) in po_bundle::build::po_files(&dir, &domain) {
         let text = std::fs::read_to_string(&path).map_err(|e| format!("{}: {e}", path.display()))?;
         let old = po::parse(&text).map_err(|e| format!("{}: {e}", path.display()))?;
-        let (new, added, obsolete, untranslated) = merge(&lang, &old, &found);
+        let shipped = shipped_translations(&deps, &lang);
+        let (new, added, obsolete, untranslated) = merge(&lang, &old, &found, &shipped);
         std::fs::write(&path, po::write(&new)).map_err(|e| format!("{}: {e}", path.display()))?;
         println!("{lang}: {added} new, {obsolete} no longer used, {untranslated} to translate");
     }
@@ -414,7 +448,8 @@ fn update(o: &Options) -> Result<bool, String> {
 fn check(o: &Options) -> Result<bool, String> {
     let domain = domain(o)?;
     let dir = o.krat.join(&o.dir);
-    let found = collect(o)?;
+    let deps = find_deps(o);
+    let found = collect(o, &deps)?;
     let mut ok = true;
     for (lang, path) in po_bundle::build::po_files(&dir, &domain) {
         let text = std::fs::read_to_string(&path).map_err(|e| format!("{}: {e}", path.display()))?;
@@ -432,6 +467,241 @@ fn check(o: &Options) -> Result<bool, String> {
         }
     }
     Ok(ok)
+}
+
+/// A dependency that ships `.slint` texts and translations
+/// (`[package.metadata.po-bundle]`).
+struct Dep {
+    name: String,
+    root: PathBuf,
+    slint: PathBuf,
+    translations: Option<PathBuf>,
+}
+
+/// Dependencies with `[package.metadata.po-bundle]`, from `cargo metadata`.
+fn find_deps(o: &Options) -> Vec<Dep> {
+    if !o.deps {
+        return Vec::new();
+    }
+    let run = |offline: bool| {
+        let mut c = std::process::Command::new(std::env::var("CARGO").unwrap_or_else(|_| "cargo".into()));
+        c.args(["metadata", "--format-version", "1"]).current_dir(&o.krat);
+        if offline {
+            c.arg("--offline");
+        }
+        c.output().ok().filter(|out| out.status.success())
+    };
+    let Some(out) = run(true).or_else(|| run(false)) else {
+        eprintln!("po-bundle: `cargo metadata` failed; dependencies are left out (--no-deps to silence)");
+        return Vec::new();
+    };
+    let Some(meta) = json::parse(&String::from_utf8_lossy(&out.stdout)) else {
+        eprintln!("po-bundle: could not read `cargo metadata`");
+        return Vec::new();
+    };
+    let me = std::fs::canonicalize(&o.krat).ok();
+    let mut deps = Vec::new();
+    for p in meta.get("packages").and_then(json::Value::array).unwrap_or(&[]) {
+        let Some(cfg) = p.get("metadata").and_then(|m| m.get("po-bundle")) else { continue };
+        let (Some(name), Some(manifest)) = (p.get("name").and_then(json::Value::str), p.get("manifest_path").and_then(json::Value::str)) else { continue };
+        let root = Path::new(manifest).parent().unwrap_or(Path::new(".")).to_path_buf();
+        if me.as_ref().is_some_and(|m| std::fs::canonicalize(&root).ok().as_ref() == Some(m)) {
+            continue;
+        }
+        let Some(slint) = cfg.get("slint").and_then(json::Value::str) else { continue };
+        deps.push(Dep {
+            name: name.to_string(),
+            slint: root.join(slint),
+            translations: cfg.get("translations").and_then(json::Value::str).map(|t| root.join(t)),
+            root,
+        });
+    }
+    deps.sort_by(|a, b| a.name.cmp(&b.name));
+    deps.dedup_by(|a, b| a.root == b.root);
+    for d in &deps {
+        println!("dependency {}: {}", d.name, d.slint.display());
+    }
+    deps
+}
+
+/// The `.po` files the dependencies ship for `lang`.
+fn shipped_translations(deps: &[Dep], lang: &str) -> Vec<File> {
+    let mut out = Vec::new();
+    for d in deps {
+        let Some(t) = &d.translations else { continue };
+        let dir = t.join(lang).join("LC_MESSAGES");
+        for e in std::fs::read_dir(&dir).into_iter().flatten().flatten() {
+            if e.path().extension().is_some_and(|x| x == "po")
+                && let Ok(text) = std::fs::read_to_string(e.path())
+                && let Ok(f) = po::parse(&text)
+            {
+                out.push(f);
+            }
+        }
+    }
+    out
+}
+
+/// Just enough JSON to read `cargo metadata`, without a dependency.
+mod json {
+    pub enum Value {
+        Null,
+        Bool,
+        Num,
+        Str(String),
+        Arr(Vec<Value>),
+        Obj(Vec<(String, Value)>),
+    }
+
+    impl Value {
+        pub fn get(&self, key: &str) -> Option<&Value> {
+            match self {
+                Value::Obj(m) => m.iter().find(|(k, _)| k == key).map(|(_, v)| v).filter(|v| !matches!(v, Value::Null)),
+                _ => None,
+            }
+        }
+        pub fn str(&self) -> Option<&str> {
+            match self {
+                Value::Str(s) => Some(s),
+                _ => None,
+            }
+        }
+        pub fn array(&self) -> Option<&[Value]> {
+            match self {
+                Value::Arr(a) => Some(a),
+                _ => None,
+            }
+        }
+    }
+
+    pub fn parse(text: &str) -> Option<Value> {
+        let mut p = Parser { b: text.as_bytes(), i: 0 };
+        p.value()
+    }
+
+    struct Parser<'a> {
+        b: &'a [u8],
+        i: usize,
+    }
+
+    impl Parser<'_> {
+        fn ws(&mut self) {
+            while self.i < self.b.len() && self.b[self.i].is_ascii_whitespace() {
+                self.i += 1;
+            }
+        }
+        fn eat(&mut self, c: u8) -> bool {
+            self.ws();
+            if self.b.get(self.i) == Some(&c) {
+                self.i += 1;
+                true
+            } else {
+                false
+            }
+        }
+        fn value(&mut self) -> Option<Value> {
+            self.ws();
+            match *self.b.get(self.i)? {
+                b'{' => {
+                    self.i += 1;
+                    let mut m = Vec::new();
+                    if self.eat(b'}') {
+                        return Some(Value::Obj(m));
+                    }
+                    loop {
+                        self.ws();
+                        let k = self.string()?;
+                        if !self.eat(b':') {
+                            return None;
+                        }
+                        m.push((k, self.value()?));
+                        if self.eat(b'}') {
+                            return Some(Value::Obj(m));
+                        }
+                        if !self.eat(b',') {
+                            return None;
+                        }
+                    }
+                }
+                b'[' => {
+                    self.i += 1;
+                    let mut a = Vec::new();
+                    if self.eat(b']') {
+                        return Some(Value::Arr(a));
+                    }
+                    loop {
+                        a.push(self.value()?);
+                        if self.eat(b']') {
+                            return Some(Value::Arr(a));
+                        }
+                        if !self.eat(b',') {
+                            return None;
+                        }
+                    }
+                }
+                b'"' => self.string().map(Value::Str),
+                b't' if self.b[self.i..].starts_with(b"true") => {
+                    self.i += 4;
+                    Some(Value::Bool)
+                }
+                b'f' if self.b[self.i..].starts_with(b"false") => {
+                    self.i += 5;
+                    Some(Value::Bool)
+                }
+                b'n' if self.b[self.i..].starts_with(b"null") => {
+                    self.i += 4;
+                    Some(Value::Null)
+                }
+                b'-' | b'0'..=b'9' => {
+                    while self.i < self.b.len() && matches!(self.b[self.i], b'-' | b'+' | b'.' | b'e' | b'E' | b'0'..=b'9') {
+                        self.i += 1;
+                    }
+                    Some(Value::Num)
+                }
+                _ => None,
+            }
+        }
+        fn string(&mut self) -> Option<String> {
+            if self.b.get(self.i) != Some(&b'"') {
+                return None;
+            }
+            self.i += 1;
+            let mut out = Vec::new();
+            loop {
+                let c = *self.b.get(self.i)?;
+                self.i += 1;
+                match c {
+                    b'"' => return String::from_utf8(out).ok(),
+                    b'\\' => {
+                        let e = *self.b.get(self.i)?;
+                        self.i += 1;
+                        match e {
+                            b'n' => out.push(b'\n'),
+                            b't' => out.push(b'\t'),
+                            b'r' => out.push(b'\r'),
+                            b'b' => out.push(8),
+                            b'f' => out.push(12),
+                            b'u' => {
+                                let hex = std::str::from_utf8(self.b.get(self.i..self.i + 4)?).ok()?;
+                                self.i += 4;
+                                let mut cp = u32::from_str_radix(hex, 16).ok()?;
+                                // Surrogate pair.
+                                if (0xD800..0xDC00).contains(&cp) && self.b.get(self.i..self.i + 2) == Some(b"\\u") {
+                                    let lo = u32::from_str_radix(std::str::from_utf8(self.b.get(self.i + 2..self.i + 6)?).ok()?, 16).ok()?;
+                                    self.i += 6;
+                                    cp = 0x10000 + ((cp - 0xD800) << 10) + (lo - 0xDC00);
+                                }
+                                let mut buf = [0u8; 4];
+                                out.extend_from_slice(char::from_u32(cp)?.encode_utf8(&mut buf).as_bytes());
+                            }
+                            other => out.push(other),
+                        }
+                    }
+                    c => out.push(c),
+                }
+            }
+        }
+    }
 }
 
 #[cfg(test)]
@@ -467,13 +737,32 @@ mod tests {
     }
 
     #[test]
+    fn reads_cargo_metadata_json() {
+        let j = r#"{"packages":[{"name":"w","manifest_path":"/x/w/Cargo.toml","metadata":{"po-bundle":{"slint":"ui","translations":"tr"}}},{"name":"q","metadata":null,"n":-1.5e3,"t":true,"s":"a\"b\u00e9\ud83d\ude00"}]}"#;
+        let v = json::parse(j).unwrap();
+        let p = v.get("packages").unwrap().array().unwrap();
+        assert_eq!(p[0].get("metadata").and_then(|m| m.get("po-bundle")).and_then(|c| c.get("slint")).and_then(json::Value::str), Some("ui"));
+        assert!(p[1].get("metadata").is_none());
+        assert_eq!(p[1].get("s").and_then(json::Value::str), Some("a\"bé😀"));
+    }
+
+    #[test]
+    fn shipped_translations_fill_in() {
+        let old = po::parse("msgid \"\"\nmsgstr \"Language: nl\\n\"\n").unwrap();
+        let shipped = po::parse("msgctxt \"lib\"\nmsgid \"sorted\"\nmsgstr \"gesorteerd\"\n").unwrap();
+        let found = vec![Entry { context: "lib".into(), id: "sorted".into(), ..Default::default() }];
+        let (new, _, _, untranslated) = merge("nl", &old, &found, &[shipped]);
+        assert_eq!((untranslated, new.entries[0].text.as_str()), (0, "gesorteerd"));
+    }
+
+    #[test]
     fn merge_keeps_adds_and_obsoletes() {
         let old = po::parse("msgid \"\"\nmsgstr \"Language: nl\\n\"\n\nmsgid \"Open\"\nmsgstr \"Openen\"\n\nmsgid \"Gone\"\nmsgstr \"Weg\"\n").unwrap();
         let found = vec![
             Entry { id: "Open".into(), ..Default::default() },
             Entry { id: "New".into(), ..Default::default() },
         ];
-        let (new, added, obsolete, untranslated) = merge("nl", &old, &found);
+        let (new, added, obsolete, untranslated) = merge("nl", &old, &found, &[]);
         assert_eq!((added, obsolete, untranslated), (1, 1, 1));
         assert_eq!(new.entries[0].text, "Openen");
         assert!(new.entries[2].obsolete && new.entries[2].id == "Gone");

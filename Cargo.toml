@@ -1,6 +1,6 @@
 [package]
 name = "po-bundle"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2024"
 license = "MIT OR Apache-2.0"
 description = "Gettext .po translations baked into your binary, for Rust code and Slint UIs alike: a tr! macro, OS-language detection, and a tool that keeps the .po files up to date."
